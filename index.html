@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>iostoawsiot</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+		}
+		h1 {
+			text-align: center;
+			margin-top: 20px;
+		}
+		p {
+			font-weight: bold;
+			margin-top: 20px;
+		}
+		#location, #orientation, #acceleration {
+			text-align: center;
+			font-size: 24px;
+			margin-top: 10px;
+		}
+	</style>
+	<script src="https://sdk.amazonaws.com/js/aws-sdk-2.100.0.min.js"></script>
+	<script src="https://sdk.amazonaws.com/js/aws-sdk-iot-2.3.4.min.js"></script>
+	<script>
+		// Initialize the AWS SDK with Cognito credentials provider
+		AWS.config.region = 'eu-west-1';
+		AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+			IdentityPoolId: 'eu-west-1:702b1ade-656f-415e-be54-5ffe198008f3'
+		});
+
+		function submitForm() {
+			// Get the values from the form
+			//var region = document.getElementById("region").value;
+			var region = 'eu-west-1';
+			//var endpoint = document.getElementById("endpoint").value;
+			var endpoint ='a59f5ggspqkss-ats.iot.eu-west-1.amazonaws.com';
+			var topic = document.getElementById("topic").value;
+			
+			// Create an instance of the AWS IoT client with the entered IoT Core endpoint
+			var iot = new AWS.Iot({
+			  endpoint: endpoint,
+			  region: region
+			});
+			
+			// Create an instance of the AWS IoT Data Plane client
+			var iotData = new AWS.IotData({
+			  endpoint: endpoint,
+			  region: region
+			});
+
+			// Check if the browser supports Geolocation
+			if ("geolocation" in navigator) {
+			  // Get the current position of the device
+			  navigator.geolocation.getCurrentPosition(function(position) {
+			    // The position object contains information about the current location
+			    var latitude = position.coords.latitude;
+			    var longitude = position.coords.longitude;
+			    document.getElementById("location").innerHTML = "Latitude: " + latitude + " Longitude: " + longitude;
+			    
+			    // Publish the geolocation data to the entered AWS IoT topic
+			    var message = {
+			        latitude: latitude,
+			        longitude: longitude
+			    };
+			    var params = {
+			        topic: topic,
+			        payload: JSON.stringify(message),
+			        qos: 0
+			    };
+			    iotData.publish(params, function(err, data) {
+			        if (err) {
+			          console.log(err);
+			        } else {
+			          console.log('Message sent:', message);
+			        }
+			    });
+			  });
+			} else {
+			  document.getElementById("location").innerHTML = "Geolocation is not supported by this browser.";
+			}
+			
+			// Check if the browser supports the Device Orientation API
+			if ("Sensor" in window && "AbsoluteOrientationSensor" in window) {
+			  try {
+			    // Create an instance of the AbsoluteOrientationSensor
+			    var sensor = new AbsoluteOrientationSensor({ frequency: 60 });
+
+			    // Add an event listener to the reading event
+			    sensor.addEventListener("reading", function(event) {
+			      // The event object contains information about the device's orientation
+			      var quaternion = event.target.quaternion;
+			      document.getElementById("orientation").innerHTML = "Quaternion: " + quaternion[0] + ", " + quaternion[1] + ", " + quaternion[2] + ", " + quaternion[3];
+
+			      // Publish the device orientation data to the entered AWS IoT topic
+			      var message = {
+			        quaternion: {
+			          x: quaternion[0],
+			          y: quaternion[1],
+			          z: quaternion[2],
+			          w: quaternion[3]
+			        }
+			      };
+			      var params = {
+			        topic: topic,
+			        payload: JSON.stringify(message),
+			        qos: 0
+			      };
+			      iotData.publish(params, function(err, data) {
+			        if (err) {
+			          console.log(err);
+			        } else {
+			          console.log('Message sent:', message);
+			        }
+			      });
+			    });
+
+			    // Add an event listener to the error event
+			    sensor.addEventListener("error", function(event) {
+			      console.log(event.error.name + ": " + event.error.message);
+			      document.getElementById("orientation").innerHTML = "Error: " + event.error.name + ": " + event.error.message;
+			    });
+
+			    // Start the sensor
+			    sensor.start();
+			  } catch (e) {
+			    console.log(e.name + ": " + e.message);
+			    document.getElementById("orientation").innerHTML = "Error: " + e.name + ": " + e.message;
+			  }
+			} else {
+			  console.log("The Device Orientation API is not supported by this browser.");
+			}
+
+			var requestPermissionButton = document.getElementById("requestPermissionButton");
+			if (requestPermissionButton) {
+			  requestPermissionButton.addEventListener("click", function() {
+			    // Request permission to access the device motion data
+			    DeviceMotionEvent.requestPermission().then(function(permissionState) {
+			      if (permissionState === "granted") {
+			        // Add an event listener to the device motion event
+			        window.addEventListener("devicemotion", function(event) {
+			          // The event object contains information about the device's acceleration
+			          var acceleration = event.acceleration;
+			          document.getElementById("acceleration").innerHTML = "Acceleration: " + acceleration.x + ", " + acceleration.y + ", " + acceleration.z;
+
+			          // Publish the device acceleration data to the entered AWS IoT topic
+			          var message = {
+			            acceleration: {
+			              x: acceleration.x,
+			              y: acceleration.y,
+			              z: acceleration.z
+			            }
+			          };
+			          var params = {
+			            topic: topic,
+			            payload: JSON.stringify(message),
+			            qos: 0
+			          };
+			          iotData.publish(params, function(err, data) {
+			            if (err) {
+			              console.log(err);
+			            } else {
+			              console.log('Message sent:', message);
+			            }
+			          });
+			        });
+			      }
+			    });
+			  });
+			} else {
+			  document.getElementById("acceleration").innerHTML = "DeviceMotionEvent is not supported by this browser.";
+			}
+		}
+	</script>
+</head> 
+<body> 
+	<h1>My Sensor App</h1>
+	<form onsubmit="event.preventDefault(); submitForm();">
+	  <!--<label for="region">Region:</label><br>
+	  <input type="text" id="region" name="region" required><br>
+	  <label for="endpoint">Endpoint:</label><br>
+	  <input type="text" id="endpoint" name="endpoint" required><br>-->
+	  <label for="topic">Topic:</label><br>
+	  <input type="text" id="topic" name="topic" required><br><br>
+	  <input type="submit" value="Submit">
+	</form>
+	<p id="location"></p>
+	<p id="orientation"></p>
+	<p id="acceleration"></p>
+	<button id="requestPermissionButton">Request access to accelerometer</button>
+</body> 
+</html>
