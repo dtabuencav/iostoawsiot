@@ -25,17 +25,17 @@
 	<script src="https://sdk.amazonaws.com/js/aws-sdk-iot-2.3.4.min.js"></script>
 	<script>
 		// Initialize the AWS SDK with Cognito credentials provider
-		AWS.config.region = 'eu-west-1';
+		AWS.config.region = 'region';
 		AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-			IdentityPoolId: 'eu-west-1:702b1ade-656f-415e-be54-5ffe198008f3'
+			IdentityPoolId: 'poolid'
 		});
 
 		function submitForm() {
 			// Get the values from the form
 			//var region = document.getElementById("region").value;
-			var region = 'eu-west-1';
+			var region = 'region';
 			//var endpoint = document.getElementById("endpoint").value;
-			var endpoint ='a59f5ggspqkss-ats.iot.eu-west-1.amazonaws.com';
+			var endpoint ='endpoint';
 			var topic = document.getElementById("topic").value;
 			
 			// Create an instance of the AWS IoT client with the entered IoT Core endpoint
