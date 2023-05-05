@@ -1,9 +1,21 @@
 # iostoawsiot
 
-This project allows to send device sensor information, such gps coordinates and accelerometer as an example from an iOS device just using a web browser.
+This is a web app that allows you to publish data from your device's sensors (such as geolocation, device orientation, and device motion) to an AWS IoT topic. The app uses the AWS SDK for JavaScript and the Device Orientation and Device Motion APIs.
 
-The index.html can be running in any server with https enabled and the page can be loaded from the iOS device by typing https://server.
+##Prerequisites
+To use this app, you'll need:
 
-In this initial version and for the sake of simplicity as typing long text in a mobile device can be difficult, the required parameters for cognito and AWS IoT core have to be hardcoded in the html. Only the mqtt topic has to be entered in the html form.
+An AWS account
+An AWS Cognito Identity Pool ID
+An AWS IoT Core endpoint
+A web browser that supports the Geolocation API and either the Device Orientation or Device Motion API
+
+##Setup
+Clone or download the repository to your local machine.
+Open the index.html file in a text editor.
+Replace region and poolid with your AWS region and Cognito Identity Pool ID, respectively, in the JavaScript code.
+Replace endpoint with your AWS IoT Core endpoint in the JavaScript code.
+
+
 
 
