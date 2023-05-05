@@ -5,10 +5,10 @@ This is a web app that allows you to publish data from your device's sensors (su
 ## Prerequisites
 To use this app, you'll need:
 
-An AWS account
-An AWS Cognito Identity Pool ID
-An AWS IoT Core endpoint
-A web browser that supports the Geolocation API and either the Device Orientation or Device Motion API
+- An AWS account
+- An AWS Cognito Identity Pool ID
+- An AWS IoT Core endpoint
+- A web browser that supports the Geolocation API and either the Device Orientation or Device Motion API
 
 ## Setup
 Clone or download the repository to your local machine.
